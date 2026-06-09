@@ -11,7 +11,8 @@ import {
   X,
   Ticket,
   Trash2,
-  Activity,
+ Activity,
+ChevronUp,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useMyEvents } from "../../context/MyEventsContext";
@@ -296,6 +297,7 @@ const EventsTab = ({ hostedEvents = [], onViewTicket }) => {
   const { user } = useAuth();
   const [waitlistEvents, setWaitlistEvents] = useState([]);
   const [recentEvents, setRecentEvents] = useState([]);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   useEffect(() => {
     if (user) {
       import("../../utils/waitlistUtils.js").then(({ getGlobalWaitlist }) => {
@@ -369,6 +371,17 @@ useEffect(() => {
 }, []);
 
 
+useEffect(() => {
+  const handleScroll = () => {
+    setShowScrollTop(window.scrollY > 300);
+  };
+
+  window.addEventListener("scroll", handleScroll);
+
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);
+
+
 
   const availableTypes = useMemo(() => {
     const types = [...new Set([...registeredEvents, ...hostedEvents].map((event) => event?.type).filter(Boolean))];
@@ -426,6 +439,13 @@ const addToRecentEvents = (event) => {
   localStorage.setItem("recentEvents", JSON.stringify(updated));
 
   setRecentEvents(updated);
+};
+
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
 };
 
 
@@ -758,6 +778,24 @@ const addToRecentEvents = (event) => {
           document.body
         )}
       </AnimatePresence>
+<AnimatePresence>
+  {showScrollTop && (
+    <motion.button
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.8 }}
+      transition={{ duration: 0.2 }}
+      onClick={scrollToTop}
+      aria-label="Back to top"
+      className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-12 h-12 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl hover:scale-110 transition-all duration-300"
+    >
+      <ChevronUp size={22} />
+    </motion.button>
+  )}
+</AnimatePresence>
+
+
+
     </motion.div>
   );
 };
